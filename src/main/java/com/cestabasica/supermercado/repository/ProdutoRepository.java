@@ -1,12 +1,14 @@
 package com.cestabasica.supermercado.repository;
 
-import java.util.*;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import com.cestabasica.supermercado.domain.Produto;
 
-public interface ProdutoRepository {
-  Produto save(Produto p);
-  Optional<Produto> findById(UUID id);
-  List<Produto> findAll();
-  void deleteById(UUID id);
-  Optional<Produto> findByCodigoBarras(String codigo);
+@Repository
+public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
+  Optional<Produto> findByCodigoBarras(String codigoBarras);
 }

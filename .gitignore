@@ -1,34 +1,58 @@
-HELP.md
+# --- Build output
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+build/
+out/
 
+# --- Maven Wrapper (mantenha o wrapper NO repositório)
+# NÃO ignore o jar do wrapper:
+#!.mvn/wrapper/maven-wrapper.jar
+# (Se você já tinha uma linha ignorando o wrapper, remova-a)
 
-### STS ###
+# --- Logs & dumps
+*.log
+hs_err_pid*
+replay_pid*
+*.hprof
+*.stackdump
+
+# --- SO / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea
+*.iml
+*.iws
+*.ipr
 .apt_generated
-.classpath
 .factorypath
 .project
 .settings
 .springBeans
 .sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
 /nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
 
-### VS Code ###
-.vscode/
+# --- Configs e segredos (ajuste conforme sua organização)
+*.env
+.env.*
+application-*.yml
+application-*.yaml
+application-*.properties
+
+# Opcional: mantenha exemplos sem segredos
+# (crie e comite "application-example.properties" com placeholders)
+
+# --- MySQL / Workbench (opcional)
+*.sql~
+*.dump
+*.bak
+*.tmp
+# Se quiser manter modelos do Workbench, remova esta linha:
+*.mwb
+
+# --- Sistema
+*.swp
+*.swo

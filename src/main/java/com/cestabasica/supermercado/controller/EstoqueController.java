@@ -25,30 +25,31 @@ public class EstoqueController {
 
   // Entrada de estoque
   @PostMapping("/{produtoId}/entrada")
-  public ResponseEntity<Produto> entrada(
+  public ResponseEntity<?> entrada(
       @PathVariable UUID produtoId,
       @RequestParam Integer quantidade,
       @RequestParam(required = false) String motivo,
       @RequestParam(required = false) String responsavel) {
 
     Optional<Produto> opt = produtoRepo.findById(produtoId);
-    if (opt.isEmpty()) return ResponseEntity.notFound().build();
-    if (quantidade == null || quantidade <= 0) return ResponseEntity.badRequest().build();
+    if (opt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produto não encontrado.");
+    if (quantidade == null || quantidade <= 0) return ResponseEntity.badRequest().body("Quantidade deve ser > 0.");
 
     Produto p = opt.get();
-    p.setEstoqueAtual((p.getEstoqueAtual() == null ? 0 : p.getEstoqueAtual()) + quantidade);
+    int atual = p.getEstoqueAtual() == null ? 0 : p.getEstoqueAtual();
+    p.setEstoqueAtual(atual + quantidade);
     produtoRepo.save(p);
 
     MovimentacaoEstoque m = MovimentacaoEstoque.builder()
-      .produtoId(produtoId)
-      .tipo(TipoMovimentacao.ENTRADA)
-      .quantidade(quantidade)
-      .motivo(motivo)
-      .responsavel(responsavel)
-      .dataHora(Instant.now())
-      .build();
-    movRepo.save(m);
+        .produto(p) // << relacionamento JPA
+        .tipo(TipoMovimentacao.ENTRADA)
+        .quantidade(quantidade)
+        .motivo(motivo)
+        .responsavel(responsavel)
+        .dataHora(Instant.now())
+        .build();
 
+    movRepo.save(m);
     return ResponseEntity.ok(p);
   }
 
@@ -61,38 +62,37 @@ public class EstoqueController {
       @RequestParam(required = false) String responsavel) {
 
     Optional<Produto> opt = produtoRepo.findById(produtoId);
-    if (opt.isEmpty()) return ResponseEntity.notFound().build();
-    if (quantidade == null || quantidade <= 0) return ResponseEntity.badRequest().build();
+    if (opt.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produto não encontrado.");
+    if (quantidade == null || quantidade <= 0) return ResponseEntity.badRequest().body("Quantidade deve ser > 0.");
 
     Produto p = opt.get();
-    int atual = (p.getEstoqueAtual() == null ? 0 : p.getEstoqueAtual());
+    int atual = p.getEstoqueAtual() == null ? 0 : p.getEstoqueAtual();
     if (atual - quantidade < 0) {
-      // simples e direto: 422
-      return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-        .body("Estoque insuficiente.");
+      return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Estoque insuficiente.");
     }
 
     p.setEstoqueAtual(atual - quantidade);
     produtoRepo.save(p);
 
     MovimentacaoEstoque m = MovimentacaoEstoque.builder()
-      .produtoId(produtoId)
-      .tipo(TipoMovimentacao.SAIDA)
-      .quantidade(quantidade)
-      .motivo(motivo)
-      .responsavel(responsavel)
-      .dataHora(Instant.now())
-      .build();
-    movRepo.save(m);
+        .produto(p) // << relacionamento JPA
+        .tipo(TipoMovimentacao.SAIDA)
+        .quantidade(quantidade)
+        .motivo(motivo)
+        .responsavel(responsavel)
+        .dataHora(Instant.now())
+        .build();
 
+    movRepo.save(m);
     return ResponseEntity.ok(p);
   }
 
-  // Histórico
-  @GetMapping("/{produtoId}/historico")
-  public ResponseEntity<List<MovimentacaoEstoque>> historico(@PathVariable UUID produtoId) {
-    Optional<Produto> opt = produtoRepo.findById(produtoId);
-    if (opt.isEmpty()) return ResponseEntity.notFound().build();
-    return ResponseEntity.ok(movRepo.findByProdutoId(produtoId));
+  // Histórico por produto
+@GetMapping("/{produtoId}/historico")
+public ResponseEntity<?> historico(@PathVariable UUID produtoId) {
+  if (!produtoRepo.existsById(produtoId)) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produto não encontrado.");
   }
+  return ResponseEntity.ok(movRepo.buscarHistoricoComProduto(produtoId));
+}
 }

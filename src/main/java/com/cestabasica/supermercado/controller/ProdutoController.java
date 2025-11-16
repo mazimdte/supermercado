@@ -19,12 +19,12 @@ public class ProdutoController {
   // CREATE
   @PostMapping
   public ResponseEntity<Produto> criar(@RequestBody Produto body) {
-    // validações manuais simples (opcional)
+    // validações manuais
     if (body.getNome() == null || body.getNome().isBlank()) {
       return ResponseEntity.badRequest().build();
     }
 
-    // impedir duplicidade por código de barras (opcional)
+    // impedir duplicidade por código de barras
     if (body.getCodigoBarras() != null) {
       Optional<Produto> existente = repo.findByCodigoBarras(body.getCodigoBarras());
       if (existente.isPresent()) {
@@ -32,7 +32,7 @@ public class ProdutoController {
       }
     }
 
-    // defaults simples
+    // defaults
     if (body.getEstoqueAtual() == null) body.setEstoqueAtual(0);
     if (body.getEstoqueMinimo() == null) body.setEstoqueMinimo(0);
     if (body.getAtivo() == null) body.setAtivo(true);
@@ -63,11 +63,11 @@ public class ProdutoController {
 
     Produto existente = existenteOpt.get();
 
-    // checagem simples de código de barras (não obrigatório)
+    // checagem simples de código de barras 
     if (body.getCodigoBarras() != null) {
       repo.findByCodigoBarras(body.getCodigoBarras()).ifPresent(outro -> {
         if (!outro.getId().equals(id)) {
-          throw new RuntimeException("Código de barras já utilizado."); // simples
+          throw new RuntimeException("Código de barras já utilizado.");
         }
       });
     }
